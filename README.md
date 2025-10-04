@@ -1,7 +1,6 @@
 Job Order Tracking System with Kafka, Debezium CDC, and Streamlit
 # 🧾 Job Order Tracking System with Kafka, Debezium CDC, and Streamlit
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Apache Kafka](https://img.shields.io/badge/Apache-Kafka-000?logo=apachekafka)
 ![Debezium CDC](https://img.shields.io/badge/Debezium-CDC-000?logo=debezium)
 ![Streamlit App](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit)
