@@ -1,6 +1,6 @@
 import streamlit as st
 import mysql.connector
-from kafka import KafkaConsumer
+from kafka import KafkaConsumer, KafkaAdminClient
 import json
 import threading
 import time
@@ -169,45 +169,22 @@ if st.session_state.job_orders:
                 st.session_state.job_orders = fetch_job_orders()
 
 # Main content area
-col1, col2 = st.columns([2, 1])
+st.subheader("Job Orders")
 
-with col1:
-    st.subheader("Job Orders")
+if st.session_state.job_orders:
+    df = pd.DataFrame(st.session_state.job_orders)
+    st.dataframe(df, use_container_width=True)
     
-    if st.session_state.job_orders:
-        df = pd.DataFrame(st.session_state.job_orders)
-        st.dataframe(df, use_container_width=True)
-        
-        # Progress chart
-        st.subheader("Completion Progress")
-        fig = px.bar(df, x='job_order_number', y='percent_completion',
-                    title='Job Order Completion Percentage',
-                    color='status',
-                    color_discrete_map={'ONGOING': 'blue', 'COMPLETED': 'green'})
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("No job orders found")
+    # Progress chart
+    st.subheader("Completion Progress")
+    fig = px.bar(df, x='job_order_number', y='percent_completion',
+                title='Job Order Completion Percentage',
+                color='status',
+                color_discrete_map={'ONGOING': 'blue', 'COMPLETED': 'green'})
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("No job orders found")
 
-with col2:
-    st.subheader("CDC Events (Real-time)")
-    
-    for msg in st.session_state.kafka_messages:
-        with st.container():
-            if msg['operation'] == 'c':
-                st.success(f"🆕 CREATE - {msg['timestamp']}")
-            elif msg['operation'] == 'u':
-                st.warning(f"✏️ UPDATE - {msg['timestamp']}")
-            elif msg['operation'] == 'd':
-                st.error(f"🗑️ DELETE - {msg['timestamp']}")
-            elif msg['operation'] == 'info':
-                st.info(f"ℹ️ INFO - {msg['timestamp']}")
-            elif msg['operation'] == 'error':
-                st.error(f"❌ ERROR - {msg['timestamp']}")
-            else:
-                st.write(f"❓ UNKNOWN - {msg['timestamp']}")
-            
-            st.json(msg['data'])
-            st.divider()
 
 # Manual refresh button
 if st.button("Refresh Data"):
@@ -218,7 +195,6 @@ if st.button("Refresh Data"):
 with st.expander("Debug Information"):
     st.write("Kafka Topics:")
     try:
-        from kafka import KafkaAdminClient
         admin = KafkaAdminClient(bootstrap_servers='kafka:9092')
         topics = admin.list_topics()
         st.write(list(topics))
